@@ -43,6 +43,7 @@ jobs:
         - ./mvnw
         - ./mvnw docker:build docker:start
         - http :8080
+        - http :8080/api/hello
         - http :8080/api/hello/me    || echo oops me
         - http :8080/api/hello/max   || echo oops max
         - http :8080/api/hello/admin || echo oops admin
