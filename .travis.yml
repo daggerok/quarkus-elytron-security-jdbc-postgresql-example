@@ -1,0 +1,83 @@
+notifications:
+  email: false
+git:
+  quiet: true
+  depth: false
+jdk: openjdk8
+node_js: lts/*
+python: 3.7
+matrix:
+  include:
+  - python: 3.7
+services: docker
+addons:
+  apt:
+    update: true
+    packages:
+    - python3-setuptools
+    - python3-pip
+    - sudo
+    - lsof
+    - curl
+install: true
+before_install:
+- |
+  if [ ! -f ${HOME}/.local/daggerok/bash-functions/master/main.bash ] ; then
+    mkdir -p ${HOME}/.local/daggerok/bash-functions/master ;
+    curl -s https://raw.githubusercontent.com/daggerok/bash-functions/master/main.bash > ${HOME}/.local/daggerok/bash-functions/master/main.bash ;
+  fi
+  source ${HOME}/.local/daggerok/bash-functions/master/main.bash ;
+- stop_any 80 5432 8080 8081 8082 8083 8084 8085 8086 8087 8088
+#
+- export PATH=$HOME/.local/bin:$PATH
+- pip3 install --user --upgrade pip
+- pip install --user --upgrade docker-compose httpie
+jobs:
+  include:
+  - stage: test
+    name: fabric8
+    script:
+      - ./mvnw
+      - ./mvnw docker:build docker:start
+      - http :8080
+      - http :8080/api/hello/me    || echo oops me
+      - http :8080/api/hello/max   || echo oops max
+      - http :8080/api/hello/admin || echo oops admin
+      - ./mvnw docker:stop docker:remove
+  - stage: test
+    name: java
+    script:
+      - ./mvnw
+      - java -jar target/*-runner.jar &
+      - wait_for 8080
+      - http :8080
+      - http :8080/api/hello
+      - http :8080/api/hello/me    || echo oops me
+      - http :8080/api/hello/max   || echo oops max
+      - http :8080/api/hello/admin || echo oops admin
+      - stop any 80 8080
+  - stage: test
+    name: native in docker
+    script:
+      - ./mvnw clean compile quarkus:build
+      - docker build -f src/main/docker/Dockerfile.native -t quarkus/quarkus-elytron-security-jdbc-postgresql-example .
+      - docker run -it --rm -p 8080:8080 --name app quarkus/quarkus-elytron-security-jdbc-postgresql-example &
+      - wait_for 8080
+      - http :8080
+      - http :8080/api/hello
+      - http :8080/api/hello/me    || echo oops me
+      - http :8080/api/hello/max   || echo oops max
+      - http :8080/api/hello/admin || echo oops admin
+      - docker rm -f -v app
+  - stage: test
+    jdk: openjdk11
+    name: versions display-property-updates
+    script: ./mvnw versions:display-property-updates
+cache:
+  npm: true
+  pip: true
+  packages: true
+  directories:
+  - ~/.m2
+  - ~/.docker
+  - ~/.local/daggerok

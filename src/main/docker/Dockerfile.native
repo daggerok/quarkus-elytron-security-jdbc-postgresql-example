@@ -1,0 +1,11 @@
+####
+# mvn package -Pnative -Dquarkus.native.container-build=true
+# docker build -f src/main/docker/Dockerfile.native -t quarkus/quarkus-elytron-security-jdbc-postgresql-example .
+# docker run -i --rm -p 8080:8080 quarkus/quarkus-elytron-security-jdbc-postgresql-example
+###
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+WORKDIR /work/
+COPY target/*-runner /work/application
+RUN chmod 775 /work
+EXPOSE 8080
+CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]
