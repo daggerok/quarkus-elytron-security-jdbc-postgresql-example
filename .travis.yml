@@ -52,7 +52,7 @@ jobs:
       jdk: openjdk8
       name: java
       script:
-        - ./mvnw
+        - ./mvnw clean compile quarkus:build
         - java -jar target/*-runner.jar &
         - wait_for 8080
         - http :8080
@@ -65,7 +65,7 @@ jobs:
       jdk: openjdk8
       name: native in docker
       script:
-        - ./mvnw clean compile quarkus:build
+        - ./mvnw package -Pnative -Dquarkus.native.container-build=true
         - docker build -f src/main/docker/Dockerfile.native -t quarkus/quarkus-elytron-security-jdbc-postgresql-example .
         - docker run -it --rm -p 8080:8080 --name app quarkus/quarkus-elytron-security-jdbc-postgresql-example &
         - wait_for 8080
