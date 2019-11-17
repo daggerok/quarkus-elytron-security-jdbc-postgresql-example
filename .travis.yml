@@ -3,6 +3,7 @@ notifications:
 git:
   quiet: true
   depth: false
+language: java
 jdk: openjdk8
 node_js: lts/*
 python: 3.7
