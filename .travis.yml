@@ -35,10 +35,10 @@ jobs:
   include:
     - stage: test
       jdk: openjdk8
-      name: fabric8
+      name: fabric8 native
       script:
-        - ./mvnw
-        - ./mvnw -Ppg-app docker:build docker:start
+        - ./mvnw package -Pnative -Dquarkus.profile=docker -Dquarkus.native.container-build=true
+        - ./mvnw -Pfabric8-native docker:build docker:start
         - http :8080
         - http :8080/api/hello
         - http -a user:user   :8080/api/hello/me
@@ -46,12 +46,39 @@ jobs:
         - http -a admin:admin :8080/api/hello/admin
         - http -a admin:admin :8080/api/hello/me    || echo oops admin
         - http -a admin:admin :8080/api/hello/max   || echo oops max
-        - ./mvnw -Ppg-app docker:stop docker:remove
+        - ./mvnw -Pfabric8-native docker:stop docker:remove
+    - stage: test
+      jdk: openjdk8
+      name: fabric8 jvm
+      script:
+        - ./mvnw -Pfabric8-jvm clean compile quarkus:build docker:build docker:start
+        - http :8080
+        - http :8080/api/hello
+        - http -a user:user   :8080/api/hello/me
+        - http -a max:max     :8080/api/hello/max
+        - http -a admin:admin :8080/api/hello/admin
+        - http -a admin:admin :8080/api/hello/me    || echo oops admin
+        - http -a admin:admin :8080/api/hello/max   || echo oops max
+        - ./mvnw -Pfabric8-jvm docker:stop docker:remove
+    - stage: test
+      jdk: openjdk8
+      name: fabric8-pg-app
+      script:
+        - ./mvnw
+        - ./mvnw -Pfabric8-pg-app docker:build docker:start
+        - http :8080
+        - http :8080/api/hello
+        - http -a user:user   :8080/api/hello/me
+        - http -a max:max     :8080/api/hello/max
+        - http -a admin:admin :8080/api/hello/admin
+        - http -a admin:admin :8080/api/hello/me    || echo oops admin
+        - http -a admin:admin :8080/api/hello/max   || echo oops max
+        - ./mvnw -Pfabric8-pg-app docker:stop docker:remove
     - stage: test
       jdk: openjdk8
       name: java
       script:
-        - ./mvnw -Ppg docker:build docker:start
+        - ./mvnw -Pfabric8-pg docker:build docker:start
         - ./mvnw clean compile quarkus:build
         - java -jar target/*-runner.jar &
         - wait_for 8080
@@ -62,13 +89,13 @@ jobs:
         - http -a admin:admin :8080/api/hello/admin
         - http -a admin:admin :8080/api/hello/me    || echo oops admin
         - http -a admin:admin :8080/api/hello/max   || echo oops max
-        - ./mvnw -Ppg docker:stop docker:remove
+        - ./mvnw -Pfabric8-pg docker:stop docker:remove
         - stop_any 80 8080
     - stage: test
       jdk: openjdk8
       name: jvm in docker
       script:
-        - ./mvnw -Ppg docker:build docker:start
+        - ./mvnw -Pfabric8-pg docker:build docker:start
         - ./mvnw compile quarkus:build
         - docker build -f src/main/docker/Dockerfile.jvm -t quarkus/quarkus-jvm .
         - docker run -i --rm -p 8080:8080 -e POSTGRES_HOST=postgres --network quarkus-elytron-security-jdbc-postgresql-example --name app quarkus/quarkus-jvm &
@@ -81,12 +108,12 @@ jobs:
         - http -a admin:admin :8080/api/hello/me    || echo oops admin
         - http -a admin:admin :8080/api/hello/max   || echo oops max
         - docker rm -f -v app
-        - ./mvnw -Ppg docker:stop docker:remove
+        - ./mvnw -Pfabric8-pg docker:stop docker:remove
     - stage: test
       jdk: openjdk8
       name: native in docker
       script:
-        - ./mvnw -Ppg docker:build docker:start
+        - ./mvnw -Pfabric8-pg docker:build docker:start
         - ./mvnw package -Pnative -Dquarkus.profile=docker -Dquarkus.native.container-build=true
         - docker build -f src/main/docker/Dockerfile.native -t quarkus/quarkus-native-app .
         - docker run -i --rm -p 8080:8080 --name app --network quarkus-elytron-security-jdbc-postgresql-example quarkus/quarkus-native-app &
@@ -99,7 +126,7 @@ jobs:
         - http -a admin:admin :8080/api/hello/me    || echo oops admin
         - http -a admin:admin :8080/api/hello/max   || echo oops max
         - docker rm -f -v app
-        - ./mvnw -Ppg docker:stop docker:remove
+        - ./mvnw -Pfabric8-pg docker:stop docker:remove
     - stage: test
       jdk: openjdk11
       name: versions display-property-updates

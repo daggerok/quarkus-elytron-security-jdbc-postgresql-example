@@ -2,16 +2,17 @@
 Secure Quarkus apps with JDBC
 
 Java 8 (JDK8) is required.
+See usages [in .travis.yml](.travis.yml) file
 
 ## getting started
 
 ```bash
-./mvnw -Ppg-app clean compile quarkus:build docker:build docker:start -Dquarkus.profile=docker
+./mvnw -Pfabric8-pg-app clean compile quarkus:build docker:build docker:start
 http :8080
 http :8080/health
 http :8080/api/hello
 http :8080/api/hello/max
-./mvnw -Ppg-app docker:stop docker:remove
+./mvnw -Pfabric8-pg-app docker:stop docker:remove
 ```
 
 ## resources
@@ -21,6 +22,7 @@ http :8080/api/hello/max
 * [Quarkus - datasources](https://quarkus.io/guides/datasource)
 * [Apache assets](http://maven.apache.org/plugins/maven-assembly-plugin/assembly-component.html)
 * [Maven + Docker by using fabric.io](https://dmp.fabric8.io/)
+* [Fabric8 external Dockerfile](https://maven.fabric8.io/#external-dockerfile)
 * [Postgres on Docker Hub](https://hub.docker.com/_/postgres)
 * [Docker cleanup: docker images -f "dangling=true"](https://docs.docker.com/engine/reference/commandline/images/)
 * [docker-compose-maven-plugin](https://github.com/dkanejs/docker-compose-maven-plugin)

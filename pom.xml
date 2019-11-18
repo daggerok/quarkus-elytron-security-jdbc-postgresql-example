@@ -228,8 +228,7 @@
       </build>
     </profile>
     <profile>
-      <!-- postgres -->
-      <id>pg</id>
+      <id>fabric8-pg</id>
       <build>
         <plugins>
           <plugin>
@@ -287,8 +286,7 @@
       </build>
     </profile>
     <profile>
-      <id>pg-app</id>
-      <!-- quarkus -->
+      <id>fabric8-pg-app</id>
       <build>
         <plugins>
           <plugin>
@@ -345,10 +343,6 @@
                   <build>
                     <from>openjdk:8u212-jre-alpine</from>
                     <env>
-                      <!--<POSTGRES_DB>postgres</POSTGRES_DB>
-                      <POSTGRES_USER>postgres</POSTGRES_USER>
-                      <POSTGRES_PASSWORD>postgres</POSTGRES_PASSWORD>
-                      <POSTGRES_PORT>${postgres-port}</POSTGRES_PORT>-->
                       <POSTGRES_HOST>${postgres-host}.${project.artifactId}</POSTGRES_HOST>
                     </env>
                     <labels>
@@ -358,8 +352,10 @@
                       <port>${quarkus-port}</port>
                     </ports>
                     <healthCheck>
-                      <timeout>3s</timeout><!-- Fail if no response after 3 seconds -->
-                      <startPeriod>5s</startPeriod><!-- Allow 5 seconds for the container to start before being flagged as unhealthy -->
+                      <retries>9</retries>
+                      <timeout>3s</timeout>
+                      <interval>3s</interval>
+                      <startPeriod>1s</startPeriod>
                       <cmd>wget --quiet --tries=1 --spider http://127.0.0.1:${quarkus-port}/health || exit 1</cmd>
                     </healthCheck>
                     <assembly>
@@ -402,6 +398,194 @@
                     </dependsOn>
                     <imagePullPolicy>Never</imagePullPolicy>
                     <hostname>${quarkus-host}</hostname>
+                    <network>
+                      <mode>custom</mode>
+                      <name>${project.artifactId}</name>
+                      <alias>${quarkus-host}</alias>
+                      <alias>${quarkus-host}.${project.artifactId}</alias>
+                    </network>
+                    <ports>
+                      <port>${quarkus-port}:${quarkus-port}</port>
+                    </ports>
+                    <wait>
+                      <http>
+                        <url>http://127.0.0.1:${quarkus-port}/health</url>
+                        <method>GET</method>
+                        <status>200..399</status>
+                      </http>
+                      <time>60000</time>
+                      <healthy>true</healthy>
+                    </wait>
+                  </run>
+                </image>
+              </images>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>fabric8-jvm</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <configuration>
+              <images>
+                <image>
+                  <name>${docker-repository}/${postgres-host}:${project.version}</name>
+                  <alias>${postgres-host}</alias>
+                  <build>
+                    <from>postgres:alpine</from>
+                    <labels>
+                      <maintainer>${docker-labels-maintainer}</maintainer>
+                    </labels>
+                    <ports>
+                      <port>${postgres-port}</port>
+                    </ports>
+                    <env>
+                      <POSTGRES_DB>postgres</POSTGRES_DB>
+                      <POSTGRES_USER>postgres</POSTGRES_USER>
+                      <POSTGRES_PASSWORD>postgres</POSTGRES_PASSWORD>
+                      <POSTGRES_PORT>${postgres-port}</POSTGRES_PORT>
+                      <POSTGRES_HOST>${postgres-host}.${project.artifactId}</POSTGRES_HOST>
+                    </env>
+                    <healthCheck>
+                      <retries>9</retries>
+                      <timeout>3s</timeout>
+                      <interval>3s</interval>
+                      <startPeriod>3s</startPeriod>
+                      <cmd>pg_isready -h 127.0.0.1 -p ${postgres-port} -d $$POSTGRES_DB -U $$POSTGRES_USER</cmd>
+                    </healthCheck>
+                  </build>
+                  <run>
+                    <hostname>${postgres-host}</hostname>
+                    <network>
+                      <mode>custom</mode>
+                      <name>${project.artifactId}</name>
+                      <alias>${postgres-host}</alias>
+                      <alias>${postgres-host}.${project.artifactId}</alias>
+                    </network>
+                    <ports>
+                      <port>${postgres-port}:${postgres-port}</port>
+                    </ports>
+                    <wait>
+                      <time>35000</time>
+                      <healthy>true</healthy>
+                    </wait>
+                  </run>
+                </image>
+                <image>
+                  <name>${docker-repository}/${quarkus-host}:${project.version}</name>
+                  <alias>${quarkus-host}</alias>
+                  <build>
+                    <contextDir>${project.basedir}</contextDir>
+                    <dockerFile>${project.basedir}/src/main/docker/Dockerfile.jvm</dockerFile>
+                  </build>
+                  <run>
+                    <dependsOn>
+                      <container>${postgres-host}</container>
+                    </dependsOn>
+                    <imagePullPolicy>Never</imagePullPolicy>
+                    <hostname>${quarkus-host}</hostname>
+                    <env>
+                      <POSTGRES_HOST>${postgres-host}.${project.artifactId}</POSTGRES_HOST>
+                    </env>
+                    <network>
+                      <mode>custom</mode>
+                      <name>${project.artifactId}</name>
+                      <alias>${quarkus-host}</alias>
+                      <alias>${quarkus-host}.${project.artifactId}</alias>
+                    </network>
+                    <ports>
+                      <port>${quarkus-port}:${quarkus-port}</port>
+                    </ports>
+                    <wait>
+                      <http>
+                        <url>http://127.0.0.1:${quarkus-port}/health</url>
+                        <method>GET</method>
+                        <status>200..399</status>
+                      </http>
+                      <time>60000</time>
+                      <healthy>true</healthy>
+                    </wait>
+                  </run>
+                </image>
+              </images>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>fabric8-native</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <configuration>
+              <images>
+                <image>
+                  <name>${docker-repository}/${postgres-host}:${project.version}</name>
+                  <alias>${postgres-host}</alias>
+                  <build>
+                    <from>postgres:alpine</from>
+                    <labels>
+                      <maintainer>${docker-labels-maintainer}</maintainer>
+                    </labels>
+                    <ports>
+                      <port>${postgres-port}</port>
+                    </ports>
+                    <env>
+                      <POSTGRES_DB>postgres</POSTGRES_DB>
+                      <POSTGRES_USER>postgres</POSTGRES_USER>
+                      <POSTGRES_PASSWORD>postgres</POSTGRES_PASSWORD>
+                      <POSTGRES_PORT>${postgres-port}</POSTGRES_PORT>
+                      <POSTGRES_HOST>${postgres-host}.${project.artifactId}</POSTGRES_HOST>
+                    </env>
+                    <healthCheck>
+                      <retries>9</retries>
+                      <timeout>3s</timeout>
+                      <interval>3s</interval>
+                      <startPeriod>3s</startPeriod>
+                      <cmd>pg_isready -h 127.0.0.1 -p ${postgres-port} -d $$POSTGRES_DB -U $$POSTGRES_USER</cmd>
+                    </healthCheck>
+                  </build>
+                  <run>
+                    <hostname>${postgres-host}</hostname>
+                    <network>
+                      <mode>custom</mode>
+                      <name>${project.artifactId}</name>
+                      <alias>${postgres-host}</alias>
+                      <alias>${postgres-host}.${project.artifactId}</alias>
+                    </network>
+                    <ports>
+                      <port>${postgres-port}:${postgres-port}</port>
+                    </ports>
+                    <wait>
+                      <time>35000</time>
+                      <healthy>true</healthy>
+                    </wait>
+                  </run>
+                </image>
+                <image>
+                  <name>${docker-repository}/${quarkus-host}:${project.version}</name>
+                  <alias>${quarkus-host}</alias>
+                  <build>
+                    <contextDir>${project.basedir}</contextDir>
+                    <dockerFile>${project.basedir}/src/main/docker/Dockerfile.native</dockerFile>
+                  </build>
+                  <run>
+                    <dependsOn>
+                      <container>${postgres-host}</container>
+                    </dependsOn>
+                    <imagePullPolicy>Never</imagePullPolicy>
+                    <hostname>${quarkus-host}</hostname>
+                    <env>
+                      <POSTGRES_HOST>${postgres-host}.${project.artifactId}</POSTGRES_HOST>
+                    </env>
                     <network>
                       <mode>custom</mode>
                       <name>${project.artifactId}</name>
