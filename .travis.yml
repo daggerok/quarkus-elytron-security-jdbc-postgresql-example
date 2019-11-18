@@ -66,6 +66,24 @@ jobs:
         - stop_any 80 8080
     - stage: test
       jdk: openjdk8
+      name: jvm in docker
+      script:
+        - ./mvnw -Ppg docker:build docker:start
+        - ./mvnw compile quarkus:build
+        - docker build -f src/main/docker/Dockerfile.jvm -t quarkus/quarkus-jvm .
+        - docker run -i --rm -p 8080:8080 -e POSTGRES_HOST=postgres --network quarkus-elytron-security-jdbc-postgresql-example --name app quarkus/quarkus-jvm &
+        - wait_healthy_docker_containers 2
+        - http :8080
+        - http :8080/api/hello
+        - http -a user:user   :8080/api/hello/me
+        - http -a max:max     :8080/api/hello/max
+        - http -a admin:admin :8080/api/hello/admin
+        - http -a admin:admin :8080/api/hello/me    || echo oops admin
+        - http -a admin:admin :8080/api/hello/max   || echo oops max
+        - docker rm -f -v app
+        - ./mvnw -Ppg docker:stop docker:remove
+    - stage: test
+      jdk: openjdk8
       name: native in docker
       script:
         - ./mvnw -Ppg docker:build docker:start

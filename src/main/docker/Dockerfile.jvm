@@ -1,20 +1,20 @@
 ####
-# This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode
-#
-# Before building the docker image run:
-#
-# mvn package
-#
-# Then, build the image with:
-#
-# docker build -f src/main/docker/Dockerfile.jvm -t quarkus/quarkus-elytron-security-jdbc-postgresql-example-jvm .
-#
-# Then run the container using:
-#
-# docker run -i --rm -p 8080:8080 quarkus/quarkus-elytron-security-jdbc-postgresql-example-jvm
-#
+# mvn -Ppg docker:build docker:start
+# mvn compile quarkus:build
+# docker build -f src/main/docker/Dockerfile.jvm -t quarkus/quarkus-jvm .
+# docker run -i --rm -p 8080:8080 -e POSTGRES_HOST=postgres --network quarkus-elytron-security-jdbc-postgresql-example --name app quarkus/quarkus-jvm
+# ...
+# docker rm -f -v app
+# mvn -Ppg docker:stop docker:remove
 ###
 FROM fabric8/java-alpine-openjdk8-jre
+
+HEALTHCHECK --retries=9 \
+            --timeout=1s \
+            --interval=3s \
+            --start-period=1s \
+            CMD curl -f http://127.0.0.1:8080/health || exit 1
+
 ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV AB_ENABLED=jmx_exporter
 COPY target/lib/* /deployments/lib/
