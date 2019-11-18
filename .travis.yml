@@ -35,7 +35,7 @@ jobs:
   include:
     - stage: test
       jdk: openjdk8
-      name: fabric8 native
+      name: fabric8-native
       script:
         - ./mvnw package -Pnative -Dquarkus.profile=docker -Dquarkus.native.container-build=true
         - ./mvnw -Pfabric8-native docker:build docker:start
@@ -49,7 +49,7 @@ jobs:
         - ./mvnw -Pfabric8-native docker:stop docker:remove
     - stage: test
       jdk: openjdk8
-      name: fabric8 jvm
+      name: fabric8-jvm
       script:
         - ./mvnw -Pfabric8-jvm clean compile quarkus:build docker:build docker:start
         - http :8080
@@ -76,7 +76,7 @@ jobs:
         - ./mvnw -Pfabric8-pg-app docker:stop docker:remove
     - stage: test
       jdk: openjdk8
-      name: java
+      name: fabric8-pg + java -jar
       script:
         - ./mvnw -Pfabric8-pg docker:build docker:start
         - ./mvnw clean compile quarkus:build
@@ -93,7 +93,7 @@ jobs:
         - stop_any 80 8080
     - stage: test
       jdk: openjdk8
-      name: jvm in docker
+      name: fabric8-pg + docker
       script:
         - ./mvnw -Pfabric8-pg docker:build docker:start
         - ./mvnw compile quarkus:build
@@ -111,7 +111,7 @@ jobs:
         - ./mvnw -Pfabric8-pg docker:stop docker:remove
     - stage: test
       jdk: openjdk8
-      name: native in docker
+      name: fabric8-pg + native in docker
       script:
         - ./mvnw -Pfabric8-pg docker:build docker:start
         - ./mvnw package -Pnative -Dquarkus.profile=docker -Dquarkus.native.container-build=true
