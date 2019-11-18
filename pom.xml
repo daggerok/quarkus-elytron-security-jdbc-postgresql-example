@@ -43,7 +43,7 @@
     <Semantic-UI.version>2.4.1</Semantic-UI.version>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
-    <surefire-plugin.version>3.0.0-M3</surefire-plugin.version>
+    <surefire-plugin.version>3.0.0-M4</surefire-plugin.version>
     <versions-maven-plugin.version>2.7</versions-maven-plugin.version>
     <docker-labels-maintainer>Maksim Kostromin https://github.com/daggerok</docker-labels-maintainer>
     <docker-maven-plugin.version>0.31.0</docker-maven-plugin.version>
