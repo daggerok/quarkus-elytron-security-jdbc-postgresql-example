@@ -52,6 +52,7 @@
     <postgres-port>5432</postgres-port>
     <quarkus-host>quarkus</quarkus-host>
     <quarkus-port>8080</quarkus-port>
+    <lombok.version>1.18.10</lombok.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -65,6 +66,13 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.webjars</groupId>
       <artifactId>Semantic-UI</artifactId>
@@ -241,10 +249,10 @@
                       <port>${postgres-port}</port>
                     </ports>
                     <env>
-                      <POSTGRES_PORT>${postgres-port}</POSTGRES_PORT>
                       <POSTGRES_DB>postgres</POSTGRES_DB>
                       <POSTGRES_USER>postgres</POSTGRES_USER>
                       <POSTGRES_PASSWORD>postgres</POSTGRES_PASSWORD>
+                      <POSTGRES_PORT>${postgres-port}</POSTGRES_PORT>
                       <POSTGRES_HOST>${postgres-host}.${project.artifactId}</POSTGRES_HOST>
                     </env>
                     <healthCheck>
@@ -300,10 +308,10 @@
                       <port>${postgres-port}</port>
                     </ports>
                     <env>
-                      <POSTGRES_PORT>${postgres-port}</POSTGRES_PORT>
                       <POSTGRES_DB>postgres</POSTGRES_DB>
                       <POSTGRES_USER>postgres</POSTGRES_USER>
                       <POSTGRES_PASSWORD>postgres</POSTGRES_PASSWORD>
+                      <POSTGRES_PORT>${postgres-port}</POSTGRES_PORT>
                       <POSTGRES_HOST>${postgres-host}.${project.artifactId}</POSTGRES_HOST>
                     </env>
                     <healthCheck>
@@ -337,12 +345,11 @@
                   <build>
                     <from>openjdk:8u212-jre-alpine</from>
                     <env>
-                      <SERVER_PORT>${quarkus-port}</SERVER_PORT>
                       <!--<POSTGRES_DB>postgres</POSTGRES_DB>
                       <POSTGRES_USER>postgres</POSTGRES_USER>
                       <POSTGRES_PASSWORD>postgres</POSTGRES_PASSWORD>
-                      <POSTGRES_PORT>${postgres-port}</POSTGRES_PORT>
-                      <POSTGRES_HOST>${postgres-host}.${project.artifactId}</POSTGRES_HOST>-->
+                      <POSTGRES_PORT>${postgres-port}</POSTGRES_PORT>-->
+                      <POSTGRES_HOST>${postgres-host}.${project.artifactId}</POSTGRES_HOST>
                     </env>
                     <labels>
                       <maintainer>${docker-labels-maintainer}</maintainer>
@@ -386,7 +393,7 @@
                       <shell>/bin/ash</shell>
                     </cmd>
                     <entryPoint>
-                      <shell>java -Dquarkus.profile=docker -jar /tmp/${project.artifactId}-${project.version}-runner.jar</shell>
+                      <shell>java -jar /tmp/${project.artifactId}-${project.version}-runner.jar</shell>
                     </entryPoint>
                   </build>
                   <run>

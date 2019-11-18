@@ -10,11 +10,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
-@Path("/api")
+@Path("/api/hello")
 public class UserResource {
 
     @GET
-    @Path("/hello/me")
+    @Path("/me")
     @RolesAllowed({"user", "admin"})
     @Produces(MediaType.APPLICATION_JSON)
     public JsonObject me(@Context SecurityContext securityContext) {
@@ -24,7 +24,7 @@ public class UserResource {
     }
 
     @GET
-    @Path("/hello/max")
+    @Path("/max")
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     public JsonObject max() {

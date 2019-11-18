@@ -72,7 +72,7 @@ jobs:
         - ./mvnw package -Pnative -Dquarkus.profile=docker -Dquarkus.native.container-build=true
         - docker build -f src/main/docker/Dockerfile.native -t quarkus/quarkus-native-app .
         - docker run -i --rm -p 8080:8080 --name app --network quarkus-elytron-security-jdbc-postgresql-example quarkus/quarkus-native-app &
-        - wait_for 8080
+        - wait_healthy_docker_containers 2
         - http :8080
         - http :8080/api/hello
         - http -a user:user   :8080/api/hello/me
