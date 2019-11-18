@@ -17,6 +17,7 @@ http :8080/api/hello/max
 
 ## resources
 
+* [Initialize quarkus app](https://quarkus.io/guides/lifecycle)
 * [Quarkus - override config at runtime](https://quarkus.io/guides/config#overriding-properties-at-runtime)
 * [Quarkus - using security with a JDBC realm](https://quarkus.io/guides/security-jdbc.html)
 * [Quarkus - datasources](https://quarkus.io/guides/datasource)
